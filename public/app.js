@@ -1,4 +1,4 @@
-const socket = io('https://proapp-ek13.onrender.com')
+const socket = io('https://proapp-37y1.onrender.com')
 
 const msgInput = document.querySelector('#message')
 const nameInput = document.querySelector('#name')
