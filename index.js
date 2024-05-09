@@ -26,9 +26,6 @@ app.use(express.static(path.join(__dirname, "public")))
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get("/", (req, res) => {
-    res.render("home.ejs");
-  });
   
   app.get("/login", (req, res) => {
     res.render("login.ejs");
