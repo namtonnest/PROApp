@@ -2,7 +2,17 @@ import express from 'express'
 import { Server } from "socket.io"
 import path from 'path'
 import { fileURLToPath } from 'url'
+import pg from "pg";
+import bodyParser from "body-parser";
 
+const db = new pg.Client ({
+    user: "postgres",
+    host: "localhost",
+    database: "secrets",
+    password: "Nt280892",
+    port: 5432,
+  })
+  db.connect();
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
@@ -13,9 +23,73 @@ const app = express()
 
 app.use(express.static(path.join(__dirname, "public")))
 
+app.use(express.static("public"));
+app.use(bodyParser.urlencoded({ extended: true }));
+
+app.get("/", (req, res) => {
+    res.render("home.ejs");
+  });
+  
+  app.get("/login", (req, res) => {
+    res.render("login.ejs");
+  });
+  
+  app.get("/register", (req, res) => {
+    res.render("register.ejs");
+  });
+  
+  app.post("/register", async (req, res) => {
+    const email = req.body.username;
+    const password = req.body.password;
+  
+    const checkResult = await db.query("SELECT * FROM users WHERE email = $1", [
+      email,
+    ]);
+  
+    if (checkResult.rows.length > 0) {
+      res.render("exists.ejs")
+    } else {
+      const result = await db.query(
+        "INSERT INTO users (email, password) VALUES ($1, $2)",
+      [email, password]
+      );
+      console.log(result);
+      res.render("secrets.ejs")
+    }
+  });
+  
+  app.post("/login", async (req, res) => {
+    const email = req.body.username
+    const password = req.body.password
+  
+    try {
+      const result = await db.query("SELECT * FROM users WHERE email = $1", [
+        email,
+      ]);
+      if (result.rows.length> 0) {
+        const user = result.rows[0];
+        const storedPassword = user.password;
+  
+        if (password === storedPassword) {
+          res.render("secrets.ejs");
+        } else {
+          res.render("ipw.ejs")
+        } 
+        } else {
+          res.render("unf.ejs")
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    }
+    
+  );
+
+
 const expressServer = app.listen(PORT, () => {
     console.log(`listening on port ${PORT}`)
 })
+
 
 // state 
 const UsersState = {
